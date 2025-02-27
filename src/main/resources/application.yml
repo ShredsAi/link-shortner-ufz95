@@ -1,52 +1,24 @@
+server:
+  port: 8080
+
 spring:
   application:
-    name: url-shortener-service
-  cloud:
-    config:
-      enabled: true
-      uri: http://config-server:8888
-      fail-fast: true
-    discovery:
-      enabled: true
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    database: ${REDIS_DATABASE:0}
-    password: ${REDIS_PASSWORD:}
-    timeout: 2000
-    lettuce:
+    name: url-shortener
+  # Redis configuration  
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
       pool:
         max-active: 8
         max-idle: 8
-        min-idle: 2
-        max-wait: -1ms
-
-server:
-  port: ${SERVER_PORT:8080}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-    prometheus:
-      enabled: true
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+        min-idle: 0
+        max-wait: -1
 
 logging:
   level:
     root: INFO
     ai.shreds: DEBUG
-    org.springframework.data.redis: INFO
-
-app:
-  url-shortener:
-    key-length: 8
-    cache-ttl: 3600
-    max-redirects: 10000

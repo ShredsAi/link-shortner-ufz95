@@ -1,36 +1,23 @@
 package ai.shreds.infrastructure.repositories;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class InfrastructureNoSqlRecord implements Serializable {
+public class InfrastructureNoSqlRecord {
     private String shortKey;
+    private String originalUrl;
     private Date createTimestamp;
     private int usageCount;
-    private String originalUrl;
     private boolean validityChecks;
-    
-    @Builder.Default
-    private Map<String, Object> optionalMetadata = new HashMap<>();
-    
+    private Map<String, Object> optionalMetadata;
     private LocalDateTime expirationTime;
     private boolean isCustomAlias;
-    
-    @Builder.Default
-    private Map<String, Integer> accessByCountry = new HashMap<>();
-    
-    @Builder.Default
-    private Map<String, Integer> accessByDevice = new HashMap<>();
+    private Map<String, Integer> accessByCountry;
+    private Map<String, Integer> accessByDevice;
 }

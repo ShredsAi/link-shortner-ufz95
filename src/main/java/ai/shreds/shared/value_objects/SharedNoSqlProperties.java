@@ -1,65 +1,64 @@
 package ai.shreds.shared.value_objects;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
-
-/**
- * Configuration properties for Redis connection.
- * Maps to application.yml redis configuration section.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@ConfigurationProperties(prefix = "spring.redis")
-public class SharedNoSqlProperties implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    @NotBlank(message = "Redis host cannot be empty")
+@Component
+@ConfigurationProperties(prefix = "spring.data.redis")
+public class SharedNoSqlProperties {
     private String host;
-
-    @Min(value = 1, message = "Port must be greater than 0")
-    @Max(value = 65535, message = "Port must be less than 65536")
     private Integer port;
-
-    @Min(value = 0, message = "Database index must be non-negative")
-    @Max(value = 15, message = "Database index must be less than 16")
     private Integer database;
-
     private String username;
     private String password;
+    private Integer poolSize;
 
-    @Min(value = 1, message = "Pool size must be at least 1")
-    @Max(value = 100, message = "Pool size must not exceed 100")
-    @Builder.Default
-    private Integer poolSize = 8;
+    // Getters and Setters
+    public String getHost() {
+        return host;
+    }
 
-    @Builder.Default
-    private Integer timeout = 2000;
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-    @Builder.Default
-    private Boolean useSsl = false;
+    public Integer getPort() {
+        return port;
+    }
 
-    @Builder.Default
-    private Integer maxRetries = 3;
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
-    @Builder.Default
-    private Long maxWaitMillis = 1000L;
+    public Integer getDatabase() {
+        return database;
+    }
 
-    @Builder.Default
-    private Boolean testOnBorrow = true;
+    public void setDatabase(Integer database) {
+        this.database = database;
+    }
 
-    @Builder.Default
-    private Boolean testOnReturn = false;
+    public String getUsername() {
+        return username;
+    }
 
-    @Builder.Default
-    private Boolean testWhileIdle = true;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Integer getPoolSize() {
+        return poolSize;
+    }
+
+    public void setPoolSize(Integer poolSize) {
+        this.poolSize = poolSize;
+    }
 }

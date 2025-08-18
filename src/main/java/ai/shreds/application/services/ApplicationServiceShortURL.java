@@ -31,9 +31,10 @@ public class ApplicationServiceShortURL implements ApplicationInputPortShortURLS
             throw new SharedExceptionValidation(e.getMessage());
         } catch (DomainExceptionCollision e) {
             throw new SharedShortUrlException(e.getMessage(), "COLLISION");
+        } catch (SharedExceptionValidation | SharedExceptionNotFound | SharedShortUrlException e) {
+            throw e;
         } catch (Exception e) {
-            handleExceptions(e);
-            return null; // This line will never be reached due to exception handling
+            throw new SharedShortUrlException("An unexpected error occurred: " + e.getMessage(), "INTERNAL_ERROR");
         }
     }
 
@@ -47,9 +48,10 @@ public class ApplicationServiceShortURL implements ApplicationInputPortShortURLS
             return mapToResponse(entity);
         } catch (DomainExceptionInvalidKey e) {
             throw new SharedExceptionValidation(e.getMessage());
+        } catch (SharedExceptionValidation | SharedExceptionNotFound | SharedShortUrlException e) {
+            throw e;
         } catch (Exception e) {
-            handleExceptions(e);
-            return null; // This line will never be reached due to exception handling
+            throw new SharedShortUrlException("An unexpected error occurred: " + e.getMessage(), "INTERNAL_ERROR");
         }
     }
 
@@ -64,12 +66,5 @@ public class ApplicationServiceShortURL implements ApplicationInputPortShortURLS
                 .shortKey(entity.getShortKey())
                 .originalUrl(entity.getOriginalUrl())
                 .build();
-    }
-
-    private void handleExceptions(Exception e) {
-        if (e instanceof SharedExceptionValidation || e instanceof SharedExceptionNotFound || e instanceof SharedShortUrlException) {
-            throw e;
-        }
-        throw new SharedShortUrlException("An unexpected error occurred", "INTERNAL_ERROR");
     }
 }

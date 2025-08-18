@@ -43,13 +43,9 @@ public class ApplicationStartupIntegrationTest {
     @Test
     void shouldStartApplicationSuccessfully(CapturedOutput output) {
         // Print startup logs
-        System.out.println("
-=== Application Startup Test Logs Start ===
-");
+        System.out.println("\n=== Application Startup Test Logs Start ===\n");
         System.out.println(output.toString());
-        System.out.println("
-=== Application Startup Test Logs End ===
-");
+        System.out.println("\n=== Application Startup Test Logs End ===\n");
 
         // Verify Redis container is running
         assertThat(redisContainer.isRunning())
@@ -90,8 +86,7 @@ public class ApplicationStartupIntegrationTest {
                 .doesNotContain("ERROR")
                 .doesNotContain("FATAL");
 
-        System.out.println("
-Redis Connection Details:");
+        System.out.println("\nRedis Connection Details:");
         System.out.println("Host: " + redisContainer.getHost());
         System.out.println("Port: " + redisContainer.getFirstMappedPort());
     }

@@ -4,21 +4,31 @@ server:
 spring:
   application:
     name: url-shortener
-  # Redis configuration  
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       database: ${REDIS_DATABASE:0}
-      username: ${REDIS_USERNAME:}
-      password: ${REDIS_PASSWORD:}
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
     root: INFO
     ai.shreds: DEBUG
+    org.springframework.data.redis: DEBUG
+    org.springframework.boot.actuate: DEBUG

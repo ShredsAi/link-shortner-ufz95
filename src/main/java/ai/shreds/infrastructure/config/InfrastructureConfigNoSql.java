@@ -20,7 +20,7 @@ public class InfrastructureConfigNoSql {
     }
 
     @Bean
-    public RedisConnectionFactory connectionFactory() {
+    public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(properties.getHost());
         config.setPort(properties.getPort());
@@ -42,15 +42,8 @@ public class InfrastructureConfigNoSql {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
         return template;
-    }
-
-    public void initializeConnection() {
-        // Connection is automatically initialized by Spring Boot
-    }
-
-    public void closeConnection() {
-        // Connection is automatically closed by Spring Boot
     }
 }

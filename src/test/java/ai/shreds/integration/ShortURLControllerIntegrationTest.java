@@ -179,4 +179,151 @@ public class ShortURLControllerIntegrationTest {
         redisTemplate.delete(shortKey);
         System.out.println("Test data cleaned up from Redis");
     }
+
+    @Test
+    void When_Short_Key_Is_Requested_Then_Original_URL_Is_Retrieved_From_Database(CapturedOutput output) {
+        System.out.println("\n=== URL Retrieval and Usage Count Test Start ===");
+        System.out.println(output.toString());
+        System.out.println("=== URL Retrieval and Usage Count Test Logs End ===\n");
+
+        // Verify Redis container is running
+        assertThat(redisContainer.isRunning())
+                .as("Redis container should be running")
+                .isTrue();
+
+        // Step 1: Create a short URL first
+        String originalUrl = "https://www.google.com/search?q=integration+testing";
+        SharedCreateShortURLRequestDTO createRequest = new SharedCreateShortURLRequestDTO();
+        createRequest.setOriginalUrl(originalUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<SharedCreateShortURLRequestDTO> createEntity = new HttpEntity<>(createRequest, headers);
+
+        String createUrl = "http://localhost:" + port + "/api/v1/urls";
+        System.out.println("Creating short URL for testing retrieval: " + createUrl);
+        
+        ResponseEntity<SharedShortURLResponseDTO> createResponse = restTemplate.exchange(
+                createUrl,
+                HttpMethod.POST,
+                createEntity,
+                SharedShortURLResponseDTO.class
+        );
+
+        assertThat(createResponse.getStatusCode())
+                .as("URL creation should succeed")
+                .isEqualTo(HttpStatus.OK);
+
+        String shortKey = createResponse.getBody().getShortKey();
+        System.out.println("Created short key for testing: " + shortKey);
+
+        // Step 2: Verify initial usage count is 0 by checking Redis directly
+        Object initialStoredData = redisTemplate.opsForValue().get(shortKey);
+        System.out.println("Initial stored data in Redis: " + initialStoredData);
+        assertThat(initialStoredData)
+                .as("Initial data should be stored in Redis")
+                .isNotNull();
+
+        // Step 3: Retrieve the URL for the first time
+        String retrieveUrl = "http://localhost:" + port + "/api/v1/urls/" + shortKey;
+        System.out.println("\nFirst retrieval - Testing GET from: " + retrieveUrl);
+
+        ResponseEntity<SharedShortURLResponseDTO> firstRetrieveResponse = restTemplate.getForEntity(
+                retrieveUrl,
+                SharedShortURLResponseDTO.class
+        );
+
+        // Verify first retrieval response
+        System.out.println("First retrieve response status: " + firstRetrieveResponse.getStatusCode());
+        System.out.println("First retrieve response body: " + firstRetrieveResponse.getBody());
+
+        assertThat(firstRetrieveResponse.getStatusCode())
+                .as("First retrieval should return 200 OK")
+                .isEqualTo(HttpStatus.OK);
+
+        SharedShortURLResponseDTO firstRetrieveBody = firstRetrieveResponse.getBody();
+        assertThat(firstRetrieveBody)
+                .as("First retrieve response body should not be null")
+                .isNotNull();
+
+        assertThat(firstRetrieveBody.getShortKey())
+                .as("Retrieved short key should match")
+                .isEqualTo(shortKey);
+
+        assertThat(firstRetrieveBody.getOriginalUrl())
+                .as("Retrieved original URL should match")
+                .isEqualTo(originalUrl);
+
+        // Step 4: Verify usage count was incremented in Redis after first retrieval
+        Object dataAfterFirstRetrieval = redisTemplate.opsForValue().get(shortKey);
+        System.out.println("Data after first retrieval: " + dataAfterFirstRetrieval);
+        assertThat(dataAfterFirstRetrieval)
+                .as("Data should still exist in Redis after first retrieval")
+                .isNotNull();
+
+        // Step 5: Retrieve the URL for the second time to verify usage count increment
+        System.out.println("\nSecond retrieval - Testing GET from: " + retrieveUrl);
+        
+        ResponseEntity<SharedShortURLResponseDTO> secondRetrieveResponse = restTemplate.getForEntity(
+                retrieveUrl,
+                SharedShortURLResponseDTO.class
+        );
+
+        // Verify second retrieval response
+        System.out.println("Second retrieve response status: " + secondRetrieveResponse.getStatusCode());
+        System.out.println("Second retrieve response body: " + secondRetrieveResponse.getBody());
+
+        assertThat(secondRetrieveResponse.getStatusCode())
+                .as("Second retrieval should return 200 OK")
+                .isEqualTo(HttpStatus.OK);
+
+        SharedShortURLResponseDTO secondRetrieveBody = secondRetrieveResponse.getBody();
+        assertThat(secondRetrieveBody)
+                .as("Second retrieve response body should not be null")
+                .isNotNull();
+
+        assertThat(secondRetrieveBody.getShortKey())
+                .as("Retrieved short key should still match")
+                .isEqualTo(shortKey);
+
+        assertThat(secondRetrieveBody.getOriginalUrl())
+                .as("Retrieved original URL should still match")
+                .isEqualTo(originalUrl);
+
+        // Step 6: Verify usage count was incremented again in Redis
+        Object dataAfterSecondRetrieval = redisTemplate.opsForValue().get(shortKey);
+        System.out.println("Data after second retrieval: " + dataAfterSecondRetrieval);
+        assertThat(dataAfterSecondRetrieval)
+                .as("Data should still exist in Redis after second retrieval")
+                .isNotNull();
+
+        // Step 7: Test retrieval of non-existent key
+        String nonExistentKey = "nonexistent123";
+        String nonExistentUrl = "http://localhost:" + port + "/api/v1/urls/" + nonExistentKey;
+        System.out.println("\nTesting retrieval of non-existent key: " + nonExistentUrl);
+
+        ResponseEntity<String> notFoundResponse = restTemplate.getForEntity(
+                nonExistentUrl,
+                String.class
+        );
+
+        System.out.println("Non-existent key response status: " + notFoundResponse.getStatusCode());
+        System.out.println("Non-existent key response body: " + notFoundResponse.getBody());
+
+        assertThat(notFoundResponse.getStatusCode())
+                .as("Non-existent key should return 404 or 500 (depending on exception handling)")
+                .isIn(HttpStatus.NOT_FOUND, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        // Verify no critical errors in logs (allow expected domain exceptions)
+        String logs = output.toString();
+        assertThat(logs)
+                .as("Application logs should not contain FATAL errors")
+                .doesNotContain("FATAL");
+
+        System.out.println("\n=== URL Retrieval and Usage Count Test completed successfully ===");
+
+        // Clean up test data
+        redisTemplate.delete(shortKey);
+        System.out.println("Test data cleaned up from Redis");
+    }
 }

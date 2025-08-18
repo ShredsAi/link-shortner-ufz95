@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @TestConfiguration
@@ -19,16 +20,15 @@ public class TestRedisConfiguration {
 
     @Bean
     @Primary
-    public RedisTemplate<String, String> redisTemplate(LettuceConnectionFactory connectionFactory) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Use simple String serialization for testing
-        StringRedisSerializer serializer = new StringRedisSerializer();
-        template.setKeySerializer(serializer);
-        template.setValueSerializer(serializer);
-        template.setHashKeySerializer(serializer);
-        template.setHashValueSerializer(serializer);
+        // Use the same serialization as production for consistency
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         
         template.afterPropertiesSet();
         return template;

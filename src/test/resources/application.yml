@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: url-shortener-test
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    root: INFO
+    ai.shreds: DEBUG
+    org.springframework.data.redis: DEBUG
+    org.springframework.test: DEBUG
+    org.testcontainers: INFO
